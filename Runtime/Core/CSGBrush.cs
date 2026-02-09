@@ -59,15 +59,27 @@ namespace RuntimeCSG
         Quaternion _lastRotation;
         Vector3 _lastScale;
 
+        // Track old bounds so we can dirty chunks the brush has LEFT
+        Bounds _previousBounds;
+        bool _hasPreviousBounds;
+
         void OnEnable()
         {
             CacheTransform();
-            NotifyDirty();
+            _hasPreviousBounds = false;
+
+            // Structural change (brush added) — full rebuild is most reliable
+            var model = GetComponentInParent<CSGModel>();
+            if (model != null)
+                model.RebuildAll();
         }
 
         void OnDisable()
         {
-            NotifyDirty();
+            // Structural change (brush removed) — full rebuild to clean up all chunks
+            var model = GetComponentInParent<CSGModel>();
+            if (model != null)
+                model.RebuildAll();
         }
 
         void Update()
@@ -102,7 +114,21 @@ namespace RuntimeCSG
         {
             var model = GetComponentInParent<CSGModel>();
             if (model != null)
+            {
+                // Dirty old chunks (where the brush WAS)
+                if (_hasPreviousBounds)
+                    model.SetDirtyBounds(_previousBounds);
+
+                // Dirty new chunks (where the brush IS)
                 model.SetDirty(this);
+
+                // Cache current bounds for next time
+                if (isActiveAndEnabled && _descriptor.Planes.Count >= 4)
+                {
+                    _previousBounds = GetBounds();
+                    _hasPreviousBounds = true;
+                }
+            }
         }
 
         /// <summary>
@@ -140,67 +166,117 @@ namespace RuntimeCSG
 
         /// <summary>
         /// Generate the convex polytope polygons from the brush's clipping planes in world space.
-        /// Each pair of three planes that intersect within all other planes produces a vertex.
+        /// Uses three-plane intersection to compute exact vertex positions, avoiding the
+        /// precision loss of the large-polygon-clipping approach.
         /// </summary>
         public List<CSGPolygon> GeneratePolygons()
         {
             var planes = GetWorldPlanes();
             if (planes.Count < 4) return new List<CSGPolygon>();
 
-            var polygons = new List<CSGPolygon>();
+            int n = planes.Count;
 
-            for (int i = 0; i < planes.Count; i++)
+            // For each face, collect vertex positions from three-plane intersections
+            var faceVertexLists = new List<List<Vector3>>(n);
+            for (int i = 0; i < n; i++)
+                faceVertexLists.Add(new List<Vector3>());
+
+            for (int i = 0; i < n - 2; i++)
             {
-                // Start with a large polygon on this plane
-                var polygon = CreateLargePolygon(planes[i], _descriptor.MaterialIndex);
-                if (polygon == null) continue;
-
-                // Clip against all other planes
-                for (int j = 0; j < planes.Count; j++)
+                for (int j = i + 1; j < n - 1; j++)
                 {
-                    if (i == j) continue;
-
-                    PolygonClipper.Split(polygon, planes[j],
-                        out var front, out _, out var cf, out _);
-
-                    // Keep the front part (inside the convex volume)
-                    polygon = front ?? cf;
-                    if (polygon == null) break;
+                    for (int k = j + 1; k < n; k++)
+                    {
+                        if (BrushBoundsUtil.IntersectThreePlanes(planes[i], planes[j], planes[k], out var point))
+                        {
+                            if (BrushBoundsUtil.IsInsideAllPlanes(point, planes))
+                            {
+                                faceVertexLists[i].Add(point);
+                                faceVertexLists[j].Add(point);
+                                faceVertexLists[k].Add(point);
+                            }
+                        }
+                    }
                 }
+            }
 
-                if (polygon != null && !polygon.IsDegenerate())
-                {
+            // Build polygons for each face
+            var polygons = new List<CSGPolygon>(n);
+
+            for (int i = 0; i < n; i++)
+            {
+                var facePoints = faceVertexLists[i];
+                if (facePoints.Count < 3) continue;
+
+                // Remove duplicate points (within epsilon)
+                RemoveDuplicatePoints(facePoints);
+                if (facePoints.Count < 3) continue;
+
+                // Sort vertices in winding order around the face normal
+                SortWindingOrder(facePoints, planes[i]);
+
+                // Create polygon
+                Vector3 normal = planes[i].Normal;
+                var verts = new List<CSGVertex>(facePoints.Count);
+                for (int v = 0; v < facePoints.Count; v++)
+                    verts.Add(new CSGVertex(facePoints[v], normal, Vector2.zero));
+
+                var polygon = new CSGPolygon(verts, planes[i], _descriptor.MaterialIndex);
+                if (!polygon.IsDegenerate())
                     polygons.Add(polygon);
-                }
             }
 
             return polygons;
         }
 
-        /// <summary>
-        /// Create a large polygon on the given plane for clipping.
-        /// </summary>
-        static CSGPolygon CreateLargePolygon(CSGPlane plane, int materialIndex)
+        static void RemoveDuplicatePoints(List<Vector3> points, float epsilon = 1e-4f)
         {
-            const float size = 10000f;
+            float epsSq = epsilon * epsilon;
+            for (int i = points.Count - 1; i >= 0; i--)
+            {
+                for (int j = 0; j < i; j++)
+                {
+                    if ((points[i] - points[j]).sqrMagnitude < epsSq)
+                    {
+                        points.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+        }
+
+        static void SortWindingOrder(List<Vector3> points, CSGPlane plane)
+        {
+            if (points.Count < 3) return;
+
             Vector3 normal = plane.Normal;
 
-            // Find a vector not parallel to the normal
+            // Compute centroid
+            Vector3 center = Vector3.zero;
+            for (int i = 0; i < points.Count; i++)
+                center += points[i];
+            center /= points.Count;
+
+            // Build tangent frame on the face plane
             Vector3 up = Mathf.Abs(normal.y) < 0.9f ? Vector3.up : Vector3.right;
-            Vector3 u = Vector3.Cross(normal, up).normalized * size;
-            Vector3 v = Vector3.Cross(normal, u).normalized * size;
+            Vector3 tangent = Vector3.Cross(normal, up).normalized;
+            Vector3 bitangent = Vector3.Cross(normal, tangent);
 
-            Vector3 center = -normal * (float)plane.D;
-
-            var vertices = new List<CSGVertex>(4)
+            // Sort by angle in tangent/bitangent plane
+            points.Sort((a, b) =>
             {
-                new CSGVertex(center - u - v, normal, Vector2.zero),
-                new CSGVertex(center + u - v, normal, Vector2.zero),
-                new CSGVertex(center + u + v, normal, Vector2.zero),
-                new CSGVertex(center - u + v, normal, Vector2.zero),
-            };
+                Vector3 da = a - center;
+                Vector3 db = b - center;
+                float angleA = Mathf.Atan2(Vector3.Dot(da, bitangent), Vector3.Dot(da, tangent));
+                float angleB = Mathf.Atan2(Vector3.Dot(db, bitangent), Vector3.Dot(db, tangent));
+                return angleA.CompareTo(angleB);
+            });
 
-            return new CSGPolygon(vertices, plane, materialIndex);
+            // Verify winding matches face normal direction
+            Vector3 edge1 = points[1] - points[0];
+            Vector3 edge2 = points[2] - points[0];
+            if (Vector3.Dot(Vector3.Cross(edge1, edge2), normal) < 0)
+                points.Reverse();
         }
 
         /// <summary>

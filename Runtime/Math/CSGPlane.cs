@@ -19,7 +19,7 @@ namespace RuntimeCSG
     [Serializable]
     public readonly struct CSGPlane : IEquatable<CSGPlane>
     {
-        public const double DefaultEpsilon = 1e-6;
+        public const double DefaultEpsilon = 1e-5;
 
         public readonly double A, B, C, D;
 

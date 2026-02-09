@@ -8,6 +8,8 @@ namespace RuntimeCSG
     /// </summary>
     public class BSPNode
     {
+        const int MaxDepth = 256;
+
         public CSGPlane Plane;
         public List<CSGPolygon> Polygons = new List<CSGPolygon>();
         public BSPNode Front;
@@ -19,7 +21,7 @@ namespace RuntimeCSG
 
         public BSPNode(List<CSGPolygon> polygons)
         {
-            Build(polygons);
+            Build(polygons, 0);
         }
 
         public BSPNode Clone()
@@ -104,16 +106,30 @@ namespace RuntimeCSG
         /// </summary>
         public void Build(List<CSGPolygon> polygons)
         {
+            Build(polygons, 0);
+        }
+
+        void Build(List<CSGPolygon> polygons, int depth)
+        {
             if (polygons == null || polygons.Count == 0)
                 return;
 
-            if (Polygons.Count == 0)
+            // When this is a fresh node, the first polygon defines the plane
+            // and is always treated as coplanar (avoids precision issues where
+            // a polygon's vertices drift from its own plane after clipping).
+            bool isNewNode = Polygons.Count == 0;
+            int startIdx = 0;
+            if (isNewNode)
+            {
                 Plane = polygons[0].Plane;
+                Polygons.Add(polygons[0]);
+                startIdx = 1;
+            }
 
             var front = new List<CSGPolygon>();
             var back = new List<CSGPolygon>();
 
-            for (int i = 0; i < polygons.Count; i++)
+            for (int i = startIdx; i < polygons.Count; i++)
             {
                 PolygonClipper.Split(polygons[i], Plane,
                     out var f, out var b, out var cf, out var cb);
@@ -124,15 +140,23 @@ namespace RuntimeCSG
                 if (b != null) back.Add(b);
             }
 
+            // Safety: cap recursion depth to prevent stack overflow
+            if (depth >= MaxDepth)
+            {
+                Polygons.AddRange(front);
+                Polygons.AddRange(back);
+                return;
+            }
+
             if (front.Count > 0)
             {
                 if (Front == null) Front = new BSPNode();
-                Front.Build(front);
+                Front.Build(front, depth + 1);
             }
             if (back.Count > 0)
             {
                 if (Back == null) Back = new BSPNode();
-                Back.Build(back);
+                Back.Build(back, depth + 1);
             }
         }
     }

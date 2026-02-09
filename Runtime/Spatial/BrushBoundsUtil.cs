@@ -58,7 +58,7 @@ namespace RuntimeCSG
         /// Each plane: Ax + By + Cz + D = 0, so the system is Ax + By + Cz = -D.
         /// Uses the cross-product formula: point = (-D0*(N1×N2) + -D1*(N2×N0) + -D2*(N0×N1)) / det
         /// </summary>
-        static bool IntersectThreePlanes(CSGPlane p0, CSGPlane p1, CSGPlane p2, out Vector3 point)
+        public static bool IntersectThreePlanes(CSGPlane p0, CSGPlane p1, CSGPlane p2, out Vector3 point)
         {
             point = Vector3.zero;
 
@@ -90,7 +90,7 @@ namespace RuntimeCSG
             return true;
         }
 
-        struct Vector3d
+        public struct Vector3d
         {
             public double x, y, z;
             public Vector3d(double x, double y, double z) { this.x = x; this.y = y; this.z = z; }
@@ -99,7 +99,7 @@ namespace RuntimeCSG
             public static double Dot(Vector3d a, Vector3d b) => a.x * b.x + a.y * b.y + a.z * b.z;
         }
 
-        static bool IsInsideAllPlanes(Vector3 point, List<CSGPlane> planes, double epsilon = 1e-4)
+        public static bool IsInsideAllPlanes(Vector3 point, List<CSGPlane> planes, double epsilon = 1e-4)
         {
             for (int i = 0; i < planes.Count; i++)
             {

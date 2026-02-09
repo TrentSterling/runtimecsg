@@ -42,3 +42,6 @@ crashlytics-build.properties
 
 # Claude Code
 .claude/
+
+# Reference sources (not part of package)
+SAMPLES/

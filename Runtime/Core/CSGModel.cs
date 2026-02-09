@@ -29,6 +29,7 @@ namespace RuntimeCSG
 
         void OnEnable()
         {
+            EnsureDefaultMaterial();
             _chunks = new ChunkManager(_chunkSize);
             RebuildAll();
         }
@@ -51,8 +52,18 @@ namespace RuntimeCSG
             if (_chunks == null) return;
 
             var bounds = brush.GetBounds();
-            var dirtyCoords = _chunks.GetOverlappingChunks(bounds);
+            SetDirtyBounds(bounds);
+        }
 
+        /// <summary>
+        /// Mark chunks overlapping the given bounds as dirty.
+        /// Used to clean up stale chunks when a brush moves or is removed.
+        /// </summary>
+        public void SetDirtyBounds(Bounds bounds)
+        {
+            if (_chunks == null) return;
+
+            var dirtyCoords = _chunks.GetOverlappingChunks(bounds);
             foreach (var coord in dirtyCoords)
             {
                 if (_dirtySet.Add(coord))
@@ -106,6 +117,60 @@ namespace RuntimeCSG
             }
         }
 
+        void EnsureDefaultMaterial()
+        {
+            if (_defaultMaterial != null) return;
+
+            // Try to find the built-in default material
+            var defaultShader = Shader.Find("Standard");
+            if (defaultShader == null)
+                defaultShader = Shader.Find("Universal Render Pipeline/Lit");
+            if (defaultShader == null)
+                defaultShader = Shader.Find("HDRP/Lit");
+
+            if (defaultShader != null)
+            {
+                _defaultMaterial = new Material(defaultShader);
+                _defaultMaterial.name = "CSG Default";
+                _defaultMaterial.color = new Color(0.7f, 0.7f, 0.7f);
+                _defaultMaterial.hideFlags = HideFlags.DontSave;
+            }
+        }
+
+        static List<CSGPolygon> ClipPolygonsToAABB(List<CSGPolygon> polygons, Bounds bounds)
+        {
+            var min = bounds.min;
+            var max = bounds.max;
+
+            // 6 inward-facing clip planes (front = inside the AABB)
+            var clipPlanes = new CSGPlane[]
+            {
+                new CSGPlane( 1,  0,  0, -min.x), // x >= min.x
+                new CSGPlane(-1,  0,  0,  max.x), // x <= max.x
+                new CSGPlane( 0,  1,  0, -min.y), // y >= min.y
+                new CSGPlane( 0, -1,  0,  max.y), // y <= max.y
+                new CSGPlane( 0,  0,  1, -min.z), // z >= min.z
+                new CSGPlane( 0,  0, -1,  max.z), // z <= max.z
+            };
+
+            var current = polygons;
+            foreach (var clipPlane in clipPlanes)
+            {
+                var clipped = new List<CSGPolygon>(current.Count);
+                foreach (var polygon in current)
+                {
+                    PolygonClipper.Split(polygon, clipPlane,
+                        out var front, out _, out var cf, out _);
+                    if (front != null) clipped.Add(front);
+                    if (cf != null) clipped.Add(cf);
+                }
+                current = clipped;
+                if (current.Count == 0) break;
+            }
+
+            return current;
+        }
+
         void RebuildChunk(Vector3Int coord, CSGBrush[] allBrushes)
         {
             var chunkBounds = _chunks.GetChunkBounds(coord);
@@ -130,21 +195,26 @@ namespace RuntimeCSG
 
             // Build CSG result
             BSPTree result = null;
+            List<CSGPolygon> singleBrushPolygons = null;
+            bool csgApplied = false;
 
             foreach (var brush in overlapping)
             {
                 var polygons = brush.GeneratePolygons();
                 if (polygons.Count == 0) continue;
 
-                var brushTree = BSPTree.FromPolygons(polygons);
-
                 if (result == null)
                 {
                     if (brush.Operation == CSGOperation.Additive)
-                        result = brushTree;
+                    {
+                        singleBrushPolygons = polygons;
+                        result = BSPTree.FromPolygons(polygons);
+                    }
                     continue;
                 }
 
+                csgApplied = true;
+                var brushTree = BSPTree.FromPolygons(polygons);
                 result = BSPTree.Apply(result, brushTree, brush.Operation);
             }
 
@@ -154,10 +224,33 @@ namespace RuntimeCSG
                 return;
             }
 
-            var resultPolygons = result.ToPolygons();
+            // When only one brush exists (no CSG operations applied), use raw polygons
+            // to avoid unnecessary BSP fragmentation
+            var resultPolygons = csgApplied ? result.ToPolygons() : singleBrushPolygons;
 
-            // Clip polygons to chunk bounds (optional - keeps meshes tidy)
-            // For now, we include all polygons from brushes overlapping the chunk
+            // Clip polygons to chunk bounds so each chunk only contains its own geometry
+            resultPolygons = ClipPolygonsToAABB(resultPolygons, chunkBounds);
+
+            if (resultPolygons.Count == 0)
+            {
+                _chunks.RemoveChunk(coord, transform);
+                return;
+            }
+
+            // Transform vertices from world space to model local space
+            // (chunks are children of this transform, so mesh must be in local space)
+            var worldToLocal = transform.worldToLocalMatrix;
+            for (int p = 0; p < resultPolygons.Count; p++)
+            {
+                var poly = resultPolygons[p];
+                for (int v = 0; v < poly.Vertices.Count; v++)
+                {
+                    var vert = poly.Vertices[v];
+                    vert.Position = worldToLocal.MultiplyPoint3x4(vert.Position);
+                    vert.Normal = worldToLocal.MultiplyVector(vert.Normal).normalized;
+                    poly.Vertices[v] = vert;
+                }
+            }
 
             var mesh = CSGMeshBuilder.Build(resultPolygons);
             _chunks.SetChunkMesh(coord, mesh, transform, _defaultMaterial);
