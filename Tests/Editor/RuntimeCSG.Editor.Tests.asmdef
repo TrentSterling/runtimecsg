@@ -1,0 +1,21 @@
+{
+    "name": "RuntimeCSG.Editor.Tests",
+    "rootNamespace": "RuntimeCSG.Editor.Tests",
+    "references": [
+        "RuntimeCSG",
+        "RuntimeCSG.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
