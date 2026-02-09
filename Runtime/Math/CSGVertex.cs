@@ -54,7 +54,17 @@ namespace RuntimeCSG
         }
 
         public override bool Equals(object obj) => obj is CSGVertex v && Equals(v);
-        public override int GetHashCode() => HashCode.Combine(Position, Normal, UV);
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 31 + Position.GetHashCode();
+                hash = hash * 31 + Normal.GetHashCode();
+                hash = hash * 31 + UV.GetHashCode();
+                return hash;
+            }
+        }
         public override string ToString() => $"CSGVertex({Position}, {Normal}, {UV})";
     }
 }

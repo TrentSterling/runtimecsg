@@ -108,7 +108,18 @@ namespace RuntimeCSG
         }
 
         public override bool Equals(object obj) => obj is CSGPlane p && Equals(p);
-        public override int GetHashCode() => HashCode.Combine(A, B, C, D);
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = 17;
+                hash = hash * 31 + A.GetHashCode();
+                hash = hash * 31 + B.GetHashCode();
+                hash = hash * 31 + C.GetHashCode();
+                hash = hash * 31 + D.GetHashCode();
+                return hash;
+            }
+        }
         public override string ToString() => $"CSGPlane({A:F4}, {B:F4}, {C:F4}, {D:F4})";
 
         public static bool operator ==(CSGPlane left, CSGPlane right) => left.Equals(right);

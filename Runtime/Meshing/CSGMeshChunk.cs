@@ -39,18 +39,23 @@ namespace RuntimeCSG
 
         public void Destroy()
         {
-            if (GameObject != null)
-            {
-                if (MeshFilter != null && MeshFilter.sharedMesh != null)
-                    Object.DestroyImmediate(MeshFilter.sharedMesh);
+            if (GameObject == null) return;
 
-                #if UNITY_EDITOR
-                if (!Application.isPlaying)
-                    Object.DestroyImmediate(GameObject);
-                else
-                #endif
-                    Object.Destroy(GameObject);
-            }
+            if (MeshFilter != null && MeshFilter.sharedMesh != null)
+                SafeDestroy(MeshFilter.sharedMesh);
+
+            SafeDestroy(GameObject);
+        }
+
+        static void SafeDestroy(Object obj)
+        {
+            if (obj == null) return;
+            #if UNITY_EDITOR
+            if (!Application.isPlaying)
+                Object.DestroyImmediate(obj);
+            else
+            #endif
+                Object.Destroy(obj);
         }
     }
 }
