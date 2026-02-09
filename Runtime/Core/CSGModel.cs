@@ -193,40 +193,29 @@ namespace RuntimeCSG
                 return;
             }
 
-            // Build CSG result
-            BSPTree result = null;
-            List<CSGPolygon> singleBrushPolygons = null;
-            bool csgApplied = false;
-
+            // Build brush data for CSG engine
+            var brushDataList = new List<ChiselCSGEngine.BrushData>();
             foreach (var brush in overlapping)
             {
                 var polygons = brush.GeneratePolygons();
                 if (polygons.Count == 0) continue;
 
-                if (result == null)
+                brushDataList.Add(new ChiselCSGEngine.BrushData
                 {
-                    if (brush.Operation == CSGOperation.Additive)
-                    {
-                        singleBrushPolygons = polygons;
-                        result = BSPTree.FromPolygons(polygons);
-                    }
-                    continue;
-                }
-
-                csgApplied = true;
-                var brushTree = BSPTree.FromPolygons(polygons);
-                result = BSPTree.Apply(result, brushTree, brush.Operation);
+                    Polygons = polygons,
+                    WorldPlanes = brush.GetWorldPlanes(),
+                    Operation = brush.Operation,
+                    Order = brush.Order
+                });
             }
 
-            if (result == null)
+            var resultPolygons = ChiselCSGEngine.Process(brushDataList);
+
+            if (resultPolygons.Count == 0)
             {
                 _chunks.RemoveChunk(coord, transform);
                 return;
             }
-
-            // When only one brush exists (no CSG operations applied), use raw polygons
-            // to avoid unnecessary BSP fragmentation
-            var resultPolygons = csgApplied ? result.ToPolygons() : singleBrushPolygons;
 
             // Clip polygons to chunk bounds so each chunk only contains its own geometry
             resultPolygons = ClipPolygonsToAABB(resultPolygons, chunkBounds);
