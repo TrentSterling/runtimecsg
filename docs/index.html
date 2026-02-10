@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RuntimeCSG - Real-time CSG for Unity</title>
     <meta name="description" content="Non-destructive CSG brush modeling for Unity. Boolean operations on brush primitives in real-time, in-editor and at runtime.">
+
+    <!-- Open Graph / Social Embeds -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="RuntimeCSG">
+    <meta property="og:description" content="Non-destructive CSG brush modeling for Unity. Real-time boolean operations, in-editor and at runtime.">
+    <meta property="og:image" content="https://tront.xyz/runtimecsg/og-image.png">
+    <meta property="og:url" content="https://tront.xyz/runtimecsg/">
+    <meta property="og:site_name" content="RuntimeCSG">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="RuntimeCSG">
+    <meta name="twitter:description" content="Non-destructive CSG brush modeling for Unity. Real-time boolean operations, in-editor and at runtime.">
+    <meta name="twitter:image" content="https://tront.xyz/runtimecsg/og-image.png">
+
+    <link rel="icon" type="image/png" href="favicon.png">
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -15,23 +32,22 @@
             min-height: 100vh;
         }
 
+        /* --- Hero --- */
         .hero {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 80vh;
+            min-height: 85vh;
             padding: 2rem;
             text-align: center;
         }
 
-        .logo-container {
-            margin-bottom: 2rem;
-        }
-
-        .logo-container svg {
-            width: 200px;
-            height: 200px;
+        .hero-icon { margin-bottom: 1.5rem; }
+        .hero-icon img {
+            width: 180px;
+            height: 180px;
+            object-fit: contain;
         }
 
         h1 {
@@ -46,7 +62,8 @@
             font-size: 1.25rem;
             color: #888;
             margin-bottom: 2.5rem;
-            max-width: 500px;
+            max-width: 520px;
+            line-height: 1.6;
         }
 
         .buttons {
@@ -68,65 +85,204 @@
             transition: all 0.2s;
         }
 
-        .btn-primary {
-            background: #fff;
-            color: #0a0a0a;
-        }
-
-        .btn-primary:hover {
-            background: #ddd;
-        }
+        .btn-primary { background: #fff; color: #0a0a0a; }
+        .btn-primary:hover { background: #ddd; }
 
         .btn-secondary {
             background: #1a1a1a;
             color: #e0e0e0;
             border: 1px solid #333;
         }
+        .btn-secondary:hover { border-color: #555; background: #222; }
 
-        .btn-secondary:hover {
-            border-color: #555;
-            background: #222;
+        /* --- Sections --- */
+        .section {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
         }
 
-        .features {
-            max-width: 900px;
+        .section-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .section-header h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header p {
+            font-size: 1.05rem;
+            color: #666;
+            max-width: 550px;
             margin: 0 auto;
-            padding: 2rem;
+        }
+
+        .divider {
+            max-width: 960px;
+            margin: 0 auto;
+            border: none;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        /* --- Feature Grid --- */
+        .features {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 1.25rem;
         }
 
         .feature {
             background: #111;
-            border: 1px solid #222;
+            border: 1px solid #1e1e1e;
             border-radius: 12px;
             padding: 1.5rem;
         }
 
+        .feature-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.75rem;
+            display: block;
+            width: 36px;
+            height: 36px;
+            line-height: 36px;
+            text-align: center;
+            background: #1a1a1a;
+            border-radius: 8px;
+        }
+
         .feature h3 {
             font-size: 1rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.4rem;
             color: #fff;
         }
 
         .feature p {
-            font-size: 0.9rem;
-            color: #888;
-            line-height: 1.5;
+            font-size: 0.88rem;
+            color: #777;
+            line-height: 1.55;
         }
 
-        .install {
-            max-width: 600px;
-            margin: 3rem auto;
-            padding: 2rem;
+        /* --- Operations showcase --- */
+        .ops-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+        }
+
+        @media (max-width: 640px) {
+            .ops-grid { grid-template-columns: 1fr; }
+        }
+
+        .op-card {
+            background: #111;
+            border: 1px solid #1e1e1e;
+            border-radius: 12px;
+            padding: 1.5rem;
             text-align: center;
         }
 
-        .install h2 {
-            font-size: 1.5rem;
+        .op-card .op-visual {
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin-bottom: 1rem;
+        }
+
+        .op-card .op-visual svg { width: 90px; height: 90px; }
+
+        .op-card h3 {
+            font-size: 1rem;
             color: #fff;
+            margin-bottom: 0.3rem;
+        }
+
+        .op-card code {
+            font-size: 0.8rem;
+            color: #555;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        .op-card p {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.5rem;
+            line-height: 1.5;
+        }
+
+        /* --- Primitives list --- */
+        .primitives {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+
+        .primitive-tag {
+            background: #141414;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
+            color: #aaa;
+            font-weight: 500;
+        }
+
+        /* --- How it works --- */
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            counter-reset: step;
+        }
+
+        .step {
+            position: relative;
+            padding: 1.5rem;
+            padding-top: 3rem;
+            background: #111;
+            border: 1px solid #1e1e1e;
+            border-radius: 12px;
+        }
+
+        .step::before {
+            counter-increment: step;
+            content: counter(step);
+            position: absolute;
+            top: 1rem;
+            left: 1.5rem;
+            width: 28px;
+            height: 28px;
+            line-height: 28px;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #555;
+            background: #1a1a1a;
+            border-radius: 6px;
+        }
+
+        .step h3 {
+            font-size: 0.95rem;
+            color: #fff;
+            margin-bottom: 0.3rem;
+        }
+
+        .step p {
+            font-size: 0.85rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* --- Code / Install --- */
+        .install {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
         }
 
         .install-code {
@@ -140,49 +296,102 @@
             text-align: left;
             overflow-x: auto;
             user-select: all;
+            margin-bottom: 0.75rem;
         }
 
         .install-note {
             font-size: 0.85rem;
-            color: #666;
-            margin-top: 0.75rem;
+            color: #555;
         }
 
+        .install-alt {
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: #444;
+        }
+
+        .install-alt code {
+            background: #141414;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            color: #666;
+        }
+
+        /* --- Screenshot placeholder --- */
+        .screenshot-placeholder {
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            background: #0e0e0e;
+            border: 1px dashed #222;
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            color: #333;
+            font-size: 0.9rem;
+        }
+
+        /* --- Comparison table --- */
+        .comparison {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .comparison table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison th, .comparison td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #1a1a1a;
+            font-size: 0.9rem;
+        }
+
+        .comparison th {
+            color: #666;
+            font-weight: 500;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .comparison td { color: #aaa; }
+
+        .comparison td:first-child {
+            color: #ddd;
+            font-weight: 500;
+        }
+
+        .check { color: #34d399; }
+        .dash { color: #333; }
+
+        /* --- Footer --- */
         footer {
             text-align: center;
             padding: 3rem 2rem;
-            color: #444;
+            color: #333;
             font-size: 0.85rem;
         }
 
         footer a {
-            color: #666;
+            color: #555;
             text-decoration: none;
         }
 
-        footer a:hover {
-            color: #aaa;
-        }
-
-        .hero-icon {
-            margin-bottom: 1.5rem;
-        }
-
-        .hero-icon img {
-            width: 200px;
-            height: 200px;
-            object-fit: contain;
-        }
+        footer a:hover { color: #aaa; }
     </style>
 </head>
 <body>
+    <!-- ==================== HERO ==================== -->
     <div class="hero">
         <div class="hero-icon">
-            <img src="icon-256.png" alt="RuntimeCSG icon - cube intersected with sphere, cylinders subtracted">
+            <img src="icon-256.png" alt="RuntimeCSG">
         </div>
 
         <h1>RuntimeCSG</h1>
-        <p class="tagline">Non-destructive CSG brush modeling for Unity. Boolean operations in real-time, in-editor and at runtime.</p>
+        <p class="tagline">Non-destructive CSG brush modeling for Unity. Build geometry with boolean operations in real-time.</p>
 
         <div class="buttons">
             <a href="https://github.com/TrentSterling/runtimecsg" class="btn btn-primary">
@@ -190,44 +399,223 @@
                 GitHub
             </a>
             <a href="#install" class="btn btn-secondary">Install</a>
+            <a href="https://github.com/TrentSterling/runtimecsg/blob/master/CHANGELOG.md" class="btn btn-secondary">Changelog</a>
         </div>
     </div>
 
-    <div class="features">
-        <div class="feature">
-            <h3>Boolean Operations</h3>
-            <p>Union, subtract, and intersect brushes. Chisel-style per-brush engine evaluates each brush independently.</p>
+    <hr class="divider">
+
+    <!-- ==================== BOOLEAN OPS ==================== -->
+    <div class="section">
+        <div class="section-header">
+            <h2>Boolean Operations</h2>
+            <p>Combine brushes with three CSG operations to carve, merge, and intersect geometry.</p>
         </div>
-        <div class="feature">
-            <h3>Brush Primitives</h3>
-            <p>Box, wedge, cylinder, arch, and sphere primitives ready to go. Combine them to build anything.</p>
-        </div>
-        <div class="feature">
-            <h3>Runtime Ready</h3>
-            <p>Not just an editor tool. Generate and modify CSG geometry at runtime for procedural levels and player-built worlds.</p>
-        </div>
-        <div class="feature">
-            <h3>Chunk System</h3>
-            <p>Grid-based spatial chunking with dirty tracking. Only affected chunks rebuild when a brush changes.</p>
-        </div>
-        <div class="feature">
-            <h3>Editor Tools</h3>
-            <p>Scene overlay toolbar, wireframe visualization, and face handles for direct brush manipulation.</p>
-        </div>
-        <div class="feature">
-            <h3>Double Precision</h3>
-            <p>Plane math uses doubles internally. No precision collapse at world-scale distances.</p>
+
+        <div class="ops-grid">
+            <div class="op-card">
+                <div class="op-visual">
+                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="15" y="25" width="55" height="55" rx="6" fill="#3b82f6" opacity="0.7"/>
+                        <circle cx="75" cy="60" r="30" fill="#3b82f6" opacity="0.7"/>
+                        <rect x="15" y="25" width="55" height="55" rx="6" fill="none" stroke="#60a5fa" stroke-width="1.5"/>
+                        <circle cx="75" cy="60" r="30" fill="none" stroke="#60a5fa" stroke-width="1.5"/>
+                    </svg>
+                </div>
+                <h3>Union</h3>
+                <code>A + B</code>
+                <p>Merge shapes together. Add geometry to build up your scene.</p>
+            </div>
+            <div class="op-card">
+                <div class="op-visual">
+                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <mask id="sub-mask">
+                                <rect x="0" y="0" width="120" height="120" fill="white"/>
+                                <circle cx="75" cy="60" r="30" fill="black"/>
+                            </mask>
+                        </defs>
+                        <rect x="15" y="25" width="55" height="55" rx="6" fill="#f59e0b" opacity="0.7" mask="url(#sub-mask)"/>
+                        <rect x="15" y="25" width="55" height="55" rx="6" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+                        <circle cx="75" cy="60" r="30" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4 3"/>
+                    </svg>
+                </div>
+                <h3>Subtract</h3>
+                <code>A - B</code>
+                <p>Carve holes and cut shapes. Remove geometry from existing brushes.</p>
+            </div>
+            <div class="op-card">
+                <div class="op-visual">
+                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <clipPath id="int-clip">
+                                <circle cx="75" cy="60" r="30"/>
+                            </clipPath>
+                        </defs>
+                        <rect x="15" y="25" width="55" height="55" rx="6" fill="#10b981" opacity="0.7" clip-path="url(#int-clip)"/>
+                        <rect x="15" y="25" width="55" height="55" rx="6" fill="none" stroke="#34d399" stroke-width="1.5" stroke-dasharray="4 3"/>
+                        <circle cx="75" cy="60" r="30" fill="none" stroke="#34d399" stroke-width="1.5" stroke-dasharray="4 3"/>
+                    </svg>
+                </div>
+                <h3>Intersect</h3>
+                <code>A &cap; B</code>
+                <p>Keep only the overlap. Create complex shapes from simple primitives.</p>
+            </div>
         </div>
     </div>
 
-    <div class="install" id="install">
-        <h2>Install via Package Manager</h2>
-        <div class="install-code">https://github.com/TrentSterling/runtimecsg.git</div>
-        <p class="install-note">Unity 2021.3+ &middot; Add as git URL in Window &gt; Package Manager &gt; + &gt; Add package from git URL</p>
+    <hr class="divider">
+
+    <!-- ==================== FEATURES ==================== -->
+    <div class="section">
+        <div class="section-header">
+            <h2>Features</h2>
+        </div>
+
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon" style="color: #3b82f6;">&#x2726;</span>
+                <h3>Per-Brush CSG Engine</h3>
+                <p>Chisel-style algorithm processes each brush independently. Fragments are split and evaluated against the full boolean chain for correct results.</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon" style="color: #f59e0b;">&#x25A6;</span>
+                <h3>Chunk System</h3>
+                <p>World-space grid chunking with dirty tracking. Only affected chunks rebuild when a brush moves or changes. Time-sliced for smooth framerates.</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon" style="color: #10b981;">&#x25B6;</span>
+                <h3>Runtime Ready</h3>
+                <p>Not editor-only. Generate and modify CSG geometry at runtime for procedural levels, destructible environments, or player-built worlds.</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon" style="color: #a855f7;">&#x2316;</span>
+                <h3>Editor Toolbar</h3>
+                <p>Scene overlay with quick-add buttons, mode toggle (add/subtract), keyboard shortcuts, wireframe visualization, and face drag handles.</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon" style="color: #ef4444;">&#x2736;</span>
+                <h3>Double Precision Math</h3>
+                <p>All plane math uses doubles internally. No precision collapse at world-scale distances. Float conversion only at mesh output.</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon" style="color: #06b6d4;">&#x2B22;</span>
+                <h3>Brush Primitives</h3>
+                <p>Box, wedge, cylinder, arch, and sphere out of the box. Plane-defined, so custom shapes are just a list of planes.</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon" style="color: #ec4899;">&#x29C9;</span>
+                <h3>Coplanar Handling</h3>
+                <p>Correct z-fighting prevention via later-brush-wins tiebreaker. No duplicate surfaces or flickering between overlapping faces.</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon" style="color: #84cc16;">&#x2263;</span>
+                <h3>143 Unit Tests</h3>
+                <p>Comprehensive test coverage for all boolean operations, edge cases, polygon splitting, categorization, and chain evaluation.</p>
+            </div>
+            <div class="feature">
+                <span class="feature-icon" style="color: #f97316;">&#x2302;</span>
+                <h3>UPM Package</h3>
+                <p>Install via Unity Package Manager from git URL. Clean separation of runtime and editor assemblies. Unity 2021.3+.</p>
+            </div>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ==================== PRIMITIVES ==================== -->
+    <div class="section">
+        <div class="section-header">
+            <h2>Brush Primitives</h2>
+            <p>Start with built-in shapes, combine with boolean operations to build anything.</p>
+        </div>
+
+        <div class="primitives">
+            <span class="primitive-tag">Box</span>
+            <span class="primitive-tag">Wedge</span>
+            <span class="primitive-tag">Cylinder</span>
+            <span class="primitive-tag">Arch</span>
+            <span class="primitive-tag">Sphere</span>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ==================== HOW IT WORKS ==================== -->
+    <div class="section">
+        <div class="section-header">
+            <h2>How It Works</h2>
+            <p>Chisel-style per-brush CSG in four steps.</p>
+        </div>
+
+        <div class="steps">
+            <div class="step">
+                <h3>Split</h3>
+                <p>Each brush's face polygons are split against the planes of all overlapping brushes, creating convex fragments.</p>
+            </div>
+            <div class="step">
+                <h3>Categorize</h3>
+                <p>Each fragment is classified as inside, outside, or coplanar relative to every other brush using centroid sampling.</p>
+            </div>
+            <div class="step">
+                <h3>Evaluate</h3>
+                <p>The boolean chain (union, subtract, intersect) is evaluated for both sides of each fragment to determine if it's on a visible boundary.</p>
+            </div>
+            <div class="step">
+                <h3>Build</h3>
+                <p>Visible fragments are collected, clipped to chunk bounds, and built into optimized meshes with colliders.</p>
+            </div>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ==================== EDITOR SHORTCUTS ==================== -->
+    <div class="section">
+        <div class="section-header">
+            <h2>Editor Shortcuts</h2>
+            <p>Fast brush creation directly in the scene view.</p>
+        </div>
+
+        <div class="comparison">
+            <table>
+                <thead>
+                    <tr><th>Key</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Tab</td><td>Toggle Add / Subtract mode</td></tr>
+                    <tr><td>Shift + B</td><td>Add box brush</td></tr>
+                    <tr><td>Shift + W</td><td>Add wedge brush</td></tr>
+                    <tr><td>Shift + C</td><td>Add cylinder brush</td></tr>
+                    <tr><td>Shift + S</td><td>Add sphere brush</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ==================== INSTALL ==================== -->
+    <div class="section" id="install">
+        <div class="section-header">
+            <h2>Install</h2>
+        </div>
+
+        <div class="install">
+            <div class="install-code">https://github.com/TrentSterling/runtimecsg.git</div>
+            <p class="install-note">Unity 2021.3+ &middot; Window &gt; Package Manager &gt; + &gt; Add package from git URL</p>
+
+            <p class="install-alt">
+                Or add to <code>Packages/manifest.json</code>:
+            </p>
+            <div class="install-code">"com.runtimecsg.core": "https://github.com/TrentSterling/runtimecsg.git"</div>
+        </div>
     </div>
 
     <footer>
-        <a href="https://tront.xyz">tront.xyz</a> &middot; MIT License
+        <a href="https://tront.xyz">tront.xyz</a> &middot;
+        <a href="https://github.com/TrentSterling/runtimecsg">GitHub</a> &middot;
+        MIT License
     </footer>
 </body>
 </html>
