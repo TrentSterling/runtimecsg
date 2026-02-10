@@ -14,6 +14,7 @@ namespace RuntimeCSG
 
         public float ChunkSize => _chunkSize;
         public int ChunkCount => _chunks.Count;
+        public IEnumerable<Vector3Int> ActiveCoords => _chunks.Keys;
 
         public ChunkManager(float chunkSize)
         {

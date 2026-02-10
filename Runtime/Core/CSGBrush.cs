@@ -55,6 +55,11 @@ namespace RuntimeCSG
 
         public BrushDescriptor Descriptor => _descriptor;
 
+        /// <summary>
+        /// Incremented each time the brush is dirtied. Used by editor visuals for cache invalidation.
+        /// </summary>
+        public int Version { get; private set; }
+
         Vector3 _lastPosition;
         Quaternion _lastRotation;
         Vector3 _lastScale;
@@ -112,6 +117,7 @@ namespace RuntimeCSG
 
         void NotifyDirty()
         {
+            Version++;
             var model = GetComponentInParent<CSGModel>();
             if (model != null)
             {

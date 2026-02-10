@@ -6,7 +6,7 @@ namespace RuntimeCSG.Editor
 {
     /// <summary>
     /// Scene view overlay toolbar for CSG editing.
-    /// Shows quick-add buttons and status when a CSGModel or CSGBrush is selected.
+    /// Shows quick-add buttons, toggle buttons for visuals, and status when a CSGModel or CSGBrush is selected.
     /// </summary>
     [InitializeOnLoad]
     static class CSGSceneOverlay
@@ -14,9 +14,11 @@ namespace RuntimeCSG.Editor
         static GUIStyle _headerStyle;
         static GUIStyle _buttonStyle;
         static GUIStyle _buttonActiveStyle;
-        static GUIStyle _statusStyle;
+        static GUIStyle _toggleOnStyle;
+        static GUIStyle _toggleOffStyle;
         static bool _stylesInit;
         static bool _subtractive;
+        static CSGModel _lastKnownModel;
 
         static CSGSceneOverlay()
         {
@@ -24,68 +26,37 @@ namespace RuntimeCSG.Editor
             SceneView.duringSceneGui += OnSceneGUI;
         }
 
-        static CSGModel GetActiveModel()
+        static CSGModel FindActiveModel()
         {
             var go = Selection.activeGameObject;
-            if (go == null) return null;
-            var model = go.GetComponent<CSGModel>();
-            if (model != null) return model;
-            return go.GetComponentInParent<CSGModel>();
+            if (go != null)
+            {
+                var model = go.GetComponent<CSGModel>();
+                if (model == null) model = go.GetComponentInParent<CSGModel>();
+                if (model != null)
+                {
+                    _lastKnownModel = model;
+                    return model;
+                }
+            }
+
+            if (_lastKnownModel != null)
+                return _lastKnownModel;
+
+            var found = Object.FindObjectOfType<CSGModel>();
+            if (found != null)
+                _lastKnownModel = found;
+
+            return found;
         }
 
         static void OnSceneGUI(SceneView sceneView)
         {
-            var model = GetActiveModel();
+            var model = FindActiveModel();
             if (model == null) return;
 
             HandleKeyboardShortcuts(model);
-            DrawAllBrushWireframes(model);
             DrawToolbar(sceneView, model);
-            DrawStatusBar(sceneView, model);
-        }
-
-        static void DrawAllBrushWireframes(CSGModel model)
-        {
-            var brushes = model.GetComponentsInChildren<CSGBrush>();
-            var selectedGo = Selection.activeGameObject;
-
-            foreach (var brush in brushes)
-            {
-                if (!brush.isActiveAndEnabled) continue;
-                // Skip the selected brush - its own editor draws the wireframe
-                if (selectedGo != null && brush.gameObject == selectedGo) continue;
-
-                var polygons = brush.GeneratePolygons();
-                if (polygons.Count == 0) continue;
-
-                Color wireColor;
-                switch (brush.Operation)
-                {
-                    case CSGOperation.Subtractive:
-                        wireColor = new Color(1f, 0.3f, 0.3f, 0.35f);
-                        break;
-                    case CSGOperation.Intersect:
-                        wireColor = new Color(0.3f, 0.3f, 1f, 0.35f);
-                        break;
-                    default:
-                        wireColor = new Color(0.3f, 1f, 0.3f, 0.35f);
-                        break;
-                }
-
-                Handles.color = wireColor;
-                foreach (var polygon in polygons)
-                {
-                    if (polygon.Vertices.Count < 2) continue;
-                    for (int i = 0; i < polygon.Vertices.Count; i++)
-                    {
-                        int j = (i + 1) % polygon.Vertices.Count;
-                        Handles.DrawLine(
-                            polygon.Vertices[i].Position,
-                            polygon.Vertices[j].Position
-                        );
-                    }
-                }
-            }
         }
 
         static void HandleKeyboardShortcuts(CSGModel model)
@@ -187,12 +158,16 @@ namespace RuntimeCSG.Editor
             _buttonActiveStyle = new GUIStyle(_buttonStyle);
             _buttonActiveStyle.normal.textColor = new Color(0.2f, 1f, 0.4f);
 
-            _statusStyle = new GUIStyle(EditorStyles.boldLabel)
+            _toggleOnStyle = new GUIStyle(GUI.skin.button)
             {
-                alignment = TextAnchor.MiddleCenter,
-                fontSize = 10,
-                normal = { textColor = new Color(0.4f, 1f, 0.4f) }
+                fontSize = 9,
+                fixedHeight = 20,
+                padding = new RectOffset(4, 4, 2, 2)
             };
+            _toggleOnStyle.normal.textColor = new Color(0.3f, 1f, 0.5f);
+
+            _toggleOffStyle = new GUIStyle(_toggleOnStyle);
+            _toggleOffStyle.normal.textColor = new Color(0.5f, 0.5f, 0.5f);
         }
 
         static void DrawToolbar(SceneView sceneView, CSGModel model)
@@ -200,8 +175,8 @@ namespace RuntimeCSG.Editor
             Handles.BeginGUI();
             EnsureStyles();
 
-            float panelW = 140f;
-            float panelH = _subtractive ? 175f : 175f;
+            float panelW = 160f;
+            float panelH = 200f;
             Rect panelRect = new Rect(10, 10, panelW, panelH);
 
             // Background
@@ -254,43 +229,30 @@ namespace RuntimeCSG.Editor
                 CSGModelEditor.SpawnDemoScene();
             GUILayout.EndHorizontal();
 
+            GUILayout.Space(4);
+
+            // --- Visual toggle buttons ---
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Wire", CSGEditorVisuals.ShowWireframes ? _toggleOnStyle : _toggleOffStyle))
+                CSGEditorVisuals.ShowWireframes = !CSGEditorVisuals.ShowWireframes;
+            if (GUILayout.Button("Chunks", CSGEditorVisuals.ShowChunkGrid ? _toggleOnStyle : _toggleOffStyle))
+                CSGEditorVisuals.ShowChunkGrid = !CSGEditorVisuals.ShowChunkGrid;
+            if (GUILayout.Button("Normals", CSGEditorVisuals.ShowNormals ? _toggleOnStyle : _toggleOffStyle))
+                CSGEditorVisuals.ShowNormals = !CSGEditorVisuals.ShowNormals;
+            GUILayout.EndHorizontal();
+
             GUILayout.Space(2);
 
-            // Brush count
-            var brushes = model.GetComponentsInChildren<CSGBrush>();
+            // Brush count + shortcut hint
             var infoStyle = new GUIStyle(EditorStyles.miniLabel)
             {
                 normal = { textColor = new Color(0.6f, 0.6f, 0.6f) },
                 alignment = TextAnchor.MiddleCenter
             };
+            var brushes = model.GetComponentsInChildren<CSGBrush>();
             GUILayout.Label($"{brushes.Length} brushes | Tab=mode", infoStyle);
 
             GUILayout.EndArea();
-            Handles.EndGUI();
-        }
-
-        static void DrawStatusBar(SceneView sceneView, CSGModel model)
-        {
-            // Show shortcuts hint at bottom of scene view
-            Handles.BeginGUI();
-
-            float w = 340f;
-            float h = 20f;
-            float x = (sceneView.position.width - w) * 0.5f;
-            float y = sceneView.position.height - 50f;
-            Rect r = new Rect(x, y, w, h);
-
-            EditorGUI.DrawRect(r, new Color(0.08f, 0.08f, 0.08f, 0.7f));
-
-            var style = new GUIStyle(EditorStyles.miniLabel)
-            {
-                alignment = TextAnchor.MiddleCenter,
-                normal = { textColor = new Color(0.5f, 0.5f, 0.5f) }
-            };
-
-            string mode = _subtractive ? "SUB" : "ADD";
-            GUI.Label(r, $"Shift+B Box | Shift+W Wedge | Shift+C Cyl | Shift+S Sphere | [{mode}]", style);
-
             Handles.EndGUI();
         }
     }

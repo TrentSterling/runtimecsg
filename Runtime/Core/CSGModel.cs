@@ -26,6 +26,18 @@ namespace RuntimeCSG
 
         public float ChunkSize => _chunkSize;
         public Material DefaultMaterial => _defaultMaterial;
+        public int ChunkCount => _chunks?.ChunkCount ?? 0;
+        public float LastRebuildMs { get; private set; }
+
+        public IEnumerable<Vector3Int> GetActiveChunkCoords()
+        {
+            return _chunks?.ActiveCoords ?? System.Array.Empty<Vector3Int>();
+        }
+
+        public Bounds GetChunkBounds(Vector3Int coord)
+        {
+            return _chunks?.GetChunkBounds(coord) ?? default;
+        }
 
         void OnEnable()
         {
@@ -86,6 +98,8 @@ namespace RuntimeCSG
             var brushes = GetComponentsInChildren<CSGBrush>(false);
             if (brushes.Length == 0) return;
 
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
             // Collect all chunk coords that contain brushes
             var allCoords = new HashSet<Vector3Int>();
             foreach (var brush in brushes)
@@ -100,6 +114,9 @@ namespace RuntimeCSG
             {
                 RebuildChunk(coord, brushes);
             }
+
+            sw.Stop();
+            LastRebuildMs = (float)sw.Elapsed.TotalMilliseconds;
         }
 
         void ProcessDirtyQueue()

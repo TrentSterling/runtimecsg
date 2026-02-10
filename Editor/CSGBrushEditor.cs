@@ -137,43 +137,7 @@ namespace RuntimeCSG.Editor
             var brush = (CSGBrush)target;
             if (!brush.isActiveAndEnabled) return;
 
-            DrawBrushWireframe(brush);
             DrawFaceHandles(brush);
-        }
-
-        void DrawBrushWireframe(CSGBrush brush)
-        {
-            var polygons = brush.GeneratePolygons();
-            if (polygons.Count == 0) return;
-
-            Color wireColor;
-            switch (brush.Operation)
-            {
-                case CSGOperation.Subtractive:
-                    wireColor = new Color(1f, 0.3f, 0.3f, 0.8f);
-                    break;
-                case CSGOperation.Intersect:
-                    wireColor = new Color(0.3f, 0.3f, 1f, 0.8f);
-                    break;
-                default:
-                    wireColor = new Color(0.3f, 1f, 0.3f, 0.8f);
-                    break;
-            }
-
-            Handles.color = wireColor;
-
-            foreach (var polygon in polygons)
-            {
-                if (polygon.Vertices.Count < 2) continue;
-                for (int i = 0; i < polygon.Vertices.Count; i++)
-                {
-                    int j = (i + 1) % polygon.Vertices.Count;
-                    Handles.DrawLine(
-                        polygon.Vertices[i].Position,
-                        polygon.Vertices[j].Position
-                    );
-                }
-            }
         }
 
         void DrawFaceHandles(CSGBrush brush)
@@ -194,6 +158,11 @@ namespace RuntimeCSG.Editor
                 Vector3 faceCenter = center + normal * (float)(-plane.DistanceTo(center));
 
                 float handleSize = HandleUtility.GetHandleSize(faceCenter) * 0.08f;
+
+                // Skip hover highlight on face being dragged
+                bool isHovered = CSGEditorVisuals.HoveredBrush == brush && CSGEditorVisuals.HoveredFaceIndex == i;
+                if (isHovered && GUIUtility.hotControl != 0)
+                    isHovered = false;
 
                 EditorGUI.BeginChangeCheck();
                 Vector3 newPos = Handles.Slider(faceCenter, normal, handleSize, Handles.DotHandleCap, 0.01f);
@@ -217,6 +186,19 @@ namespace RuntimeCSG.Editor
                     var model = brush.GetComponentInParent<CSGModel>();
                     if (model != null)
                         model.RebuildAll();
+                }
+
+                // Show distance label when dragging this face handle
+                if (GUIUtility.hotControl != 0 && newPos != faceCenter)
+                {
+                    float dist = Vector3.Distance(newPos, center);
+                    var labelStyle = new GUIStyle(GUI.skin.label)
+                    {
+                        fontSize = 11,
+                        normal = { textColor = Color.yellow },
+                        fontStyle = FontStyle.Bold
+                    };
+                    Handles.Label(newPos + normal * handleSize * 3f, $"{dist:F3}", labelStyle);
                 }
             }
         }
