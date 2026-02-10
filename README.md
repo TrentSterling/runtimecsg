@@ -8,6 +8,10 @@ Non-destructive CSG brush modeling for Unity. Works in-editor and at runtime.
 
 Build levels and geometry using boolean operations (union, subtract, intersect) on brush primitives - no baking, no export, just real-time constructive solid geometry.
 
+<p align="center">
+  <img src="docs/editor-demo.gif" alt="RuntimeCSG editor demo - real-time face hover and selection">
+</p>
+
 ## Features
 
 - **Boolean Operations** - Union, subtract, and intersect brushes in real-time
