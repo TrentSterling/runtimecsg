@@ -18,12 +18,12 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <style>
         :root {
-            --bg: #0d1117;
-            --bg2: #161b22;
-            --bg3: #21262d;
-            --border: #30363d;
-            --text: #e6edf3;
-            --text-dim: #8b949e;
+            --bg: #080808;
+            --bg2: #0e0e0e;
+            --bg3: #181818;
+            --border: #222;
+            --text: #e0e0e0;
+            --text-dim: #777;
             --accent: #3b82f6;
             --accent2: #10b981;
             --accent3: #f59e0b;
@@ -37,11 +37,10 @@
             color: var(--text);
             line-height: 1.6;
             overflow-x: hidden;
-            padding-top: 60px;
         }
 
-        a { color: var(--accent); text-decoration: none; }
-        a:hover { color: #60a5fa; }
+        a { color: #7db4ff; text-decoration: none; }
+        a:hover { color: #a8ccff; }
 
         .container {
             max-width: 960px;
@@ -51,125 +50,36 @@
             z-index: 1;
         }
 
-        /* ===== NAVBAR (tront style) ===== */
-        @keyframes continuous-sheen {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-        @keyframes background-aurora {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        #navbar {
-            position: fixed;
-            top: 0; left: 0; width: 100%;
-            height: 60px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: row-reverse;
-            justify-content: center;
-            align-items: center;
-            gap: 0.75rem;
-            background-color: rgba(13, 17, 23, 0.6);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            padding: 0 1rem;
-            overflow: hidden;
-        }
-        #navbar::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            z-index: -1;
-            background-image: linear-gradient(110deg, rgba(59,130,246,0.1), rgba(16,185,129,0.12), rgba(245,158,11,0.1));
-            background-size: 400% 400%;
-            animation: background-aurora 12s ease infinite;
-            opacity: 0;
-            transition: opacity 0.7s ease-out;
-        }
-        #navbar:hover::before { opacity: 1; }
-
-        .nav-link {
-            position: relative;
-            display: flex;
-            align-items: center;
-            height: 38px;
-            padding: 0 1.1rem;
-            color: #c0c0c0;
-            text-decoration: none;
-            font-size: 0.88rem;
-            font-weight: 600;
-            border-radius: 10px;
-            background-color: rgba(40, 40, 45, 0.7);
-            border: 1px solid rgba(255,255,255,0.08);
-            transform-style: preserve-3d;
-            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-            overflow: hidden;
-        }
-        .nav-link::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0;
-            width: 200%; height: 100%;
-            background: linear-gradient(110deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%);
-            transform: translateX(-100%);
-            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-        }
-        .nav-link:hover {
-            color: #fff;
-            background-color: rgba(50, 50, 55, 0.9);
-            border-color: rgba(255,255,255,0.15);
-            transform: perspective(1000px) rotateX(8deg) translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.25), 0 0 20px -5px rgba(59,130,246,0.6), 0 0 20px -5px rgba(16,185,129,0.6);
-        }
-        .nav-link:hover::before { transform: translateX(100%); }
-
-        .nav-link.home-link {
-            padding-left: 0.5rem;
-            gap: 0.5rem;
-        }
-        .nav-logo {
-            height: 26px; width: 26px;
-            border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.15);
-            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .nav-link:hover .nav-logo {
-            transform: rotate(360deg);
-        }
-
         /* ===== HERO ===== */
+        @keyframes icon-glow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(59,130,246,0.4)) drop-shadow(0 0 60px rgba(16,185,129,0.15)); }
+            50% { filter: drop-shadow(0 0 30px rgba(59,130,246,0.6)) drop-shadow(0 0 80px rgba(16,185,129,0.25)); }
+        }
         .hero {
             text-align: center;
-            padding: 40px 0 24px;
+            padding: 48px 0 24px;
         }
         .hero-icon {
-            width: 200px; height: 200px;
-            margin: 0 auto 20px;
+            width: 220px; height: 220px;
+            margin: 0 auto 24px;
             display: block;
-            border-radius: 24px;
-            box-shadow: 0 0 60px rgba(59,130,246,0.15), 0 0 120px rgba(16,185,129,0.08);
+            animation: icon-glow 4s ease-in-out infinite;
         }
         .hero h1 {
-            font-size: 48px;
-            font-weight: 800;
-            letter-spacing: -1px;
-            margin-bottom: 12px;
-            background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 10px;
+            color: #fff;
         }
         .hero .tagline {
-            font-size: 18px;
+            font-size: 1.15rem;
             color: var(--text-dim);
             margin-bottom: 24px;
-            max-width: 520px;
+            max-width: 500px;
             margin-left: auto;
             margin-right: auto;
+            line-height: 1.6;
         }
         .hero .buttons {
             display: flex;
@@ -181,35 +91,25 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 12px 24px;
+            padding: 10px 22px;
             border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
+            font-size: 0.95rem;
+            font-weight: 500;
             text-decoration: none;
-            transition: transform 0.15s, box-shadow 0.15s;
+            transition: all 0.15s;
         }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-        }
+        .btn:hover { transform: translateY(-1px); }
         .btn-primary {
-            background: linear-gradient(135deg, var(--accent), #5a9bf4);
-            color: white;
+            background: #fff;
+            color: #080808;
         }
+        .btn-primary:hover { background: #ddd; }
         .btn-secondary {
             background: var(--bg3);
-            color: var(--text);
-            border: 1px solid var(--border);
+            color: #ccc;
+            border: 1px solid #2a2a2a;
         }
-        .version-badge {
-            display: inline-block;
-            margin-top: 16px;
-            padding: 4px 14px;
-            background: var(--bg3);
-            border-radius: 20px;
-            font-size: 13px;
-            color: var(--text-dim);
-        }
+        .btn-secondary:hover { background: #1c1c1c; border-color: #444; }
 
         /* ===== SCREENSHOT ===== */
         .screenshot {
@@ -217,11 +117,11 @@
             padding: 0 0 40px;
         }
         .screenshot-frame {
-            background: var(--bg2);
-            border: 1px solid var(--border);
+            background: #0a0a0a;
+            border: 1px solid #1a1a1a;
             border-radius: 12px;
-            padding: 24px;
-            max-width: 840px;
+            padding: 16px;
+            max-width: 900px;
             margin: 0 auto;
         }
         .screenshot-frame img {
@@ -277,8 +177,8 @@
             gap: 40px;
             flex-wrap: wrap;
             padding: 24px 0;
-            border-top: 1px solid #21262d;
-            border-bottom: 1px solid #21262d;
+            border-top: 1px solid #161616;
+            border-bottom: 1px solid #161616;
         }
         .stat .num {
             font-size: 24px;
@@ -299,7 +199,7 @@
         /* ===== SECTIONS ===== */
         .section {
             padding: 48px 0;
-            border-top: 1px solid #21262d;
+            border-top: 1px solid #161616;
         }
         .section h2 {
             text-align: center;
@@ -324,7 +224,7 @@
         @media(max-width:640px) { .ops-grid { grid-template-columns: 1fr; } }
         .op-card {
             background: var(--bg2);
-            border: 1px solid #21262d;
+            border: 1px solid #1a1a1a;
             border-radius: 12px;
             padding: 28px;
             text-align: center;
@@ -376,7 +276,7 @@
         }
         .feature-card {
             background: var(--bg2);
-            border: 1px solid #21262d;
+            border: 1px solid #1a1a1a;
             border-radius: 12px;
             padding: 24px;
             transition: border-color 0.2s, transform 0.2s;
@@ -397,7 +297,7 @@
         }
         .prim {
             background: var(--bg2);
-            border: 1px solid #21262d;
+            border: 1px solid #1a1a1a;
             border-radius: 8px;
             padding: 8px 20px;
             font-size: 15px;
@@ -420,7 +320,7 @@
         @media(max-width:768px) { .steps-grid { grid-template-columns: repeat(2, 1fr); } }
         .step-card {
             background: var(--bg2);
-            border: 1px solid #21262d;
+            border: 1px solid #1a1a1a;
             border-radius: 12px;
             padding: 20px;
             padding-top: 48px;
@@ -451,7 +351,7 @@
         /* ===== CODE BLOCK ===== */
         .codeblock {
             background: var(--bg2);
-            border: 1px solid #21262d;
+            border: 1px solid #1a1a1a;
             border-radius: 12px;
             padding: 24px 28px;
             font-family: 'SF Mono','Fira Code',monospace;
@@ -474,7 +374,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 0;
-            border-bottom: 1px solid #21262d;
+            border-bottom: 1px solid #1a1a1a;
         }
         .control-key {
             background: var(--bg3);
@@ -498,7 +398,7 @@
         @media(max-width:640px) { .install-options { grid-template-columns: 1fr; } }
         .install-card {
             background: var(--bg2);
-            border: 1px solid #21262d;
+            border: 1px solid #1a1a1a;
             border-radius: 12px;
             padding: 24px;
         }
@@ -519,43 +419,32 @@
         /* ===== FOOTER ===== */
         footer {
             padding: 32px 0;
-            border-top: 1px solid #21262d;
+            border-top: 1px solid #161616;
             text-align: center;
-            color: var(--text-dim);
-            font-size: 14px;
+            color: #333;
+            font-size: 13px;
         }
-        footer a { color: var(--accent2); }
-        footer a:hover { text-decoration: underline; }
+        footer a { color: #444; }
+        footer a:hover { color: #888; }
     </style>
 </head>
 <body>
-
-<!-- ===== NAVBAR ===== -->
-<nav id="navbar">
-    <a href="https://github.com/TrentSterling/runtimecsg" class="nav-link">GitHub</a>
-    <a href="#install" class="nav-link">Install</a>
-    <a href="#features" class="nav-link">Features</a>
-    <a href="https://tront.xyz" class="nav-link home-link">
-        <img src="icon-256.png" alt="RuntimeCSG" class="nav-logo">
-        RuntimeCSG
-    </a>
-</nav>
 
 <div class="container">
 
     <!-- ===== HERO ===== -->
     <section class="hero">
-        <img src="icon-256.png" alt="RuntimeCSG" class="hero-icon">
+        <img src="icon.png" alt="RuntimeCSG" class="hero-icon">
         <h1>RuntimeCSG</h1>
-        <p class="tagline">Non-destructive CSG brush modeling for Unity. Boolean operations on brush primitives, in-editor and at runtime.</p>
+        <p class="tagline">Non-destructive CSG brush modeling for Unity. Build geometry with boolean operations in real-time.</p>
         <div class="buttons">
             <a href="https://github.com/TrentSterling/runtimecsg" class="btn btn-primary">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                View on GitHub
+                <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                GitHub
             </a>
-            <a href="#install" class="btn btn-secondary">Install Package</a>
+            <a href="#install" class="btn btn-secondary">Install</a>
+            <a href="https://github.com/TrentSterling/runtimecsg/blob/master/CHANGELOG.md" class="btn btn-secondary">Changelog</a>
         </div>
-        <div class="version-badge">v0.2.0 &middot; Unity 2021.3+ &middot; MIT License</div>
     </section>
 
     <!-- ===== SCREENSHOT ===== -->
