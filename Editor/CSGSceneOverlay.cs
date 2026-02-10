@@ -43,7 +43,7 @@ namespace RuntimeCSG.Editor
             if (_lastKnownModel != null)
                 return _lastKnownModel;
 
-            var found = Object.FindObjectOfType<CSGModel>();
+            var found = Object.FindFirstObjectByType<CSGModel>();
             if (found != null)
                 _lastKnownModel = found;
 

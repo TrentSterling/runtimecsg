@@ -223,7 +223,7 @@ Shader ""Hidden/CSGEditorOverlay""
                 return _lastKnownModel;
 
             // 3. Find any model in the scene
-            var found = Object.FindObjectOfType<CSGModel>();
+            var found = Object.FindFirstObjectByType<CSGModel>();
             if (found != null)
                 _lastKnownModel = found;
 
@@ -350,12 +350,16 @@ Shader ""Hidden/CSGEditorOverlay""
 
         static Color GetWireColor(CSGOperation op, bool selected)
         {
-            float alpha = selected ? 0.9f : 0.35f;
+            // Selected brush always gets a bright distinct color
+            if (selected)
+                return new Color(1f, 0.6f, 0.1f, 0.9f); // orange
+
+            // Unselected: dim operation-colored wireframes
             switch (op)
             {
-                case CSGOperation.Subtractive: return new Color(1f, 0.3f, 0.3f, alpha);
-                case CSGOperation.Intersect:   return new Color(0.3f, 0.3f, 1f, alpha);
-                default:                       return new Color(0.3f, 1f, 0.3f, alpha);
+                case CSGOperation.Subtractive: return new Color(1f, 0.3f, 0.3f, 0.15f);
+                case CSGOperation.Intersect:   return new Color(0.3f, 0.3f, 1f, 0.15f);
+                default:                       return new Color(0.3f, 1f, 0.3f, 0.15f);
             }
         }
 
@@ -526,6 +530,27 @@ Shader ""Hidden/CSGEditorOverlay""
         // Face highlight (pure Handles drawing — no GameObjects, no picking)
         // =====================================================================
 
+        static void GetHighlightColors(out Color fill, out Color outline)
+        {
+            if (HoveredBrush != null)
+            {
+                switch (HoveredBrush.Operation)
+                {
+                    case CSGOperation.Subtractive:
+                        fill = new Color(1f, 0.2f, 0.2f, 0.18f);
+                        outline = new Color(1f, 0.3f, 0.3f, 0.9f);
+                        return;
+                    case CSGOperation.Intersect:
+                        fill = new Color(0.2f, 0.3f, 1f, 0.18f);
+                        outline = new Color(0.3f, 0.4f, 1f, 0.9f);
+                        return;
+                }
+            }
+            // Additive / default
+            fill = new Color(0.2f, 0.8f, 1f, 0.18f);
+            outline = new Color(0.3f, 0.9f, 1f, 0.9f);
+        }
+
         static void DrawFaceHighlight()
         {
             if (_highlightPoly == null) return;
@@ -542,16 +567,18 @@ Shader ""Hidden/CSGEditorOverlay""
             for (int i = 0; i < count; i++)
                 verts[i] = poly.Vertices[i].Position + normal * offset;
 
-            // Filled polygon (semi-transparent cyan)
-            Handles.color = new Color(0.2f, 0.8f, 1f, 0.18f);
+            GetHighlightColors(out var fillColor, out var outlineColor);
+
+            // Filled polygon
+            Handles.color = fillColor;
             Handles.DrawAAConvexPolygon(verts);
 
-            // Outline (bright cyan)
-            Handles.color = new Color(0.3f, 0.9f, 1f, 0.9f);
+            // Outline (thick)
+            Handles.color = outlineColor;
             for (int i = 0; i < count; i++)
             {
                 int j = (i + 1) % count;
-                Handles.DrawLine(verts[i], verts[j]);
+                Handles.DrawLine(verts[i], verts[j], 3f);
             }
 
             // Normal arrow (amber, only when toggle is on)
