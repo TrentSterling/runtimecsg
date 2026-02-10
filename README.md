@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/icon-256.png" alt="RuntimeCSG" width="128">
+</p>
+
 # RuntimeCSG
 
 Non-destructive CSG brush modeling for Unity. Works in-editor and at runtime.
