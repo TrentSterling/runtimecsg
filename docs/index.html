@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RuntimeCSG - Real-time CSG for Unity</title>
+    <meta name="description" content="Non-destructive CSG brush modeling for Unity. Boolean operations on brush primitives in real-time, in-editor and at runtime.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .logo-container {
+            margin-bottom: 2rem;
+        }
+
+        .logo-container svg {
+            width: 200px;
+            height: 200px;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .tagline {
+            font-size: 1.25rem;
+            color: #888;
+            margin-bottom: 2.5rem;
+            max-width: 500px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #fff;
+            color: #0a0a0a;
+        }
+
+        .btn-primary:hover {
+            background: #ddd;
+        }
+
+        .btn-secondary {
+            background: #1a1a1a;
+            color: #e0e0e0;
+            border: 1px solid #333;
+        }
+
+        .btn-secondary:hover {
+            border-color: #555;
+            background: #222;
+        }
+
+        .features {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .feature {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .feature h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .feature p {
+            font-size: 0.9rem;
+            color: #888;
+            line-height: 1.5;
+        }
+
+        .install {
+            max-width: 600px;
+            margin: 3rem auto;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .install h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .install-code {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #aaa;
+            text-align: left;
+            overflow-x: auto;
+            user-select: all;
+        }
+
+        .install-note {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.75rem;
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #444;
+            font-size: 0.85rem;
+        }
+
+        footer a {
+            color: #666;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: #aaa;
+        }
+
+        /* CSG diagram SVG */
+        .csg-diagram {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .csg-op {
+            text-align: center;
+        }
+
+        .csg-op svg {
+            width: 120px;
+            height: 120px;
+        }
+
+        .csg-op span {
+            display: block;
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.5rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="csg-diagram">
+            <div class="csg-op">
+                <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Union: two overlapping rounded rects, both filled -->
+                    <rect x="15" y="25" width="55" height="55" rx="6" fill="#3b82f6" opacity="0.8"/>
+                    <circle cx="75" cy="60" r="30" fill="#3b82f6" opacity="0.8"/>
+                    <rect x="15" y="25" width="55" height="55" rx="6" fill="none" stroke="#60a5fa" stroke-width="1.5"/>
+                    <circle cx="75" cy="60" r="30" fill="none" stroke="#60a5fa" stroke-width="1.5"/>
+                </svg>
+                <span>Union</span>
+            </div>
+            <div class="csg-op">
+                <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Subtract: box with circle cut out -->
+                    <defs>
+                        <clipPath id="sub-clip">
+                            <rect x="0" y="0" width="120" height="120"/>
+                        </clipPath>
+                        <mask id="sub-mask">
+                            <rect x="0" y="0" width="120" height="120" fill="white"/>
+                            <circle cx="75" cy="60" r="30" fill="black"/>
+                        </mask>
+                    </defs>
+                    <rect x="15" y="25" width="55" height="55" rx="6" fill="#f59e0b" opacity="0.8" mask="url(#sub-mask)"/>
+                    <rect x="15" y="25" width="55" height="55" rx="6" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+                    <circle cx="75" cy="60" r="30" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4 3"/>
+                </svg>
+                <span>Subtract</span>
+            </div>
+            <div class="csg-op">
+                <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Intersect: only overlap region filled -->
+                    <defs>
+                        <clipPath id="int-clip">
+                            <circle cx="75" cy="60" r="30"/>
+                        </clipPath>
+                    </defs>
+                    <rect x="15" y="25" width="55" height="55" rx="6" fill="#10b981" opacity="0.8" clip-path="url(#int-clip)"/>
+                    <rect x="15" y="25" width="55" height="55" rx="6" fill="none" stroke="#34d399" stroke-width="1.5" stroke-dasharray="4 3"/>
+                    <circle cx="75" cy="60" r="30" fill="none" stroke="#34d399" stroke-width="1.5" stroke-dasharray="4 3"/>
+                </svg>
+                <span>Intersect</span>
+            </div>
+        </div>
+
+        <h1>RuntimeCSG</h1>
+        <p class="tagline">Non-destructive CSG brush modeling for Unity. Boolean operations in real-time, in-editor and at runtime.</p>
+
+        <div class="buttons">
+            <a href="https://github.com/TrentSterling/runtimecsg" class="btn btn-primary">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                GitHub
+            </a>
+            <a href="#install" class="btn btn-secondary">Install</a>
+        </div>
+    </div>
+
+    <div class="features">
+        <div class="feature">
+            <h3>Boolean Operations</h3>
+            <p>Union, subtract, and intersect brushes. Chisel-style per-brush engine evaluates each brush independently.</p>
+        </div>
+        <div class="feature">
+            <h3>Brush Primitives</h3>
+            <p>Box, wedge, cylinder, arch, and sphere primitives ready to go. Combine them to build anything.</p>
+        </div>
+        <div class="feature">
+            <h3>Runtime Ready</h3>
+            <p>Not just an editor tool. Generate and modify CSG geometry at runtime for procedural levels and player-built worlds.</p>
+        </div>
+        <div class="feature">
+            <h3>Chunk System</h3>
+            <p>Grid-based spatial chunking with dirty tracking. Only affected chunks rebuild when a brush changes.</p>
+        </div>
+        <div class="feature">
+            <h3>Editor Tools</h3>
+            <p>Scene overlay toolbar, wireframe visualization, and face handles for direct brush manipulation.</p>
+        </div>
+        <div class="feature">
+            <h3>Double Precision</h3>
+            <p>Plane math uses doubles internally. No precision collapse at world-scale distances.</p>
+        </div>
+    </div>
+
+    <div class="install" id="install">
+        <h2>Install via Package Manager</h2>
+        <div class="install-code">https://github.com/TrentSterling/runtimecsg.git</div>
+        <p class="install-note">Unity 2021.3+ &middot; Add as git URL in Window &gt; Package Manager &gt; + &gt; Add package from git URL</p>
+    </div>
+
+    <footer>
+        <a href="https://tront.xyz">tront.xyz</a> &middot; MIT License
+    </footer>
+</body>
+</html>

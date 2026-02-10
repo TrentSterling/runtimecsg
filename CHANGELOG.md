@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.2.0] - 2026-02-09
+
+### Added
+- Chisel-style per-brush CSG engine (`ChiselCSGEngine`) replacing monolithic BSP approach
+- Per-brush boolean evaluation with fragment splitting and chain evaluation
+- `BrushPairIntersection` for brush overlap detection and polygon categorization
+- `RoutingTable` and `OperationTables` for CSG operation lookups
+- `PolygonCategory` enum (Inside, Aligned, ReverseAligned, Outside)
+- 143 unit tests covering all CSG operations, edge cases, and engine internals
+
+### Fixed
+- Touching brushes incorrectly detected as overlapping (separating plane epsilon)
+- Polygon categorization failures on edge/corner vertices (now uses centroid)
+- Intersect operations on non-overlapping brushes incorrectly producing geometry
+- Coplanar surface z-fighting via later-brush-wins tiebreaker
+
+### Changed
+- `CSGModel.RebuildChunk` now uses `ChiselCSGEngine` instead of `BSPTree`
+- Version bump to 0.2.0
+
 ## [0.1.0] - 2026-02-09
 
 ### Added

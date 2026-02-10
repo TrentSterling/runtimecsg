@@ -1,17 +1,24 @@
 {
     "name": "com.runtimecsg.core",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "displayName": "RuntimeCSG",
     "description": "Non-destructive CSG brush modeling system for Unity. Works both in-editor and at runtime.",
     "unity": "2021.3",
     "keywords": [
         "csg",
-        "bsp",
         "brush",
         "modeling",
-        "constructive-solid-geometry"
+        "constructive-solid-geometry",
+        "boolean",
+        "level-design"
     ],
     "author": {
-        "name": "RuntimeCSG"
-    }
+        "name": "Trent Sterling",
+        "url": "https://tront.xyz"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/TrentSterling/runtimecsg.git"
+    },
+    "license": "MIT"
 }
