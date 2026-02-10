@@ -55,6 +55,11 @@ namespace RuntimeCSG
 
             var result = new List<CSGPolygon>();
 
+            // Pre-allocate scratch buffers for EvaluateFragment (reused per fragment)
+            var categories = new PolygonCategory[n];
+            var frontInside = new bool[n];
+            var backInside = new bool[n];
+
             // Process each brush independently
             for (int ownerIdx = 0; ownerIdx < n; ownerIdx++)
             {
@@ -83,7 +88,8 @@ namespace RuntimeCSG
                         if (fragment.IsDegenerate()) continue;
 
                         var visibility = EvaluateFragment(
-                            fragment, ownerIdx, brushes, n, overlaps);
+                            fragment, ownerIdx, brushes, n, overlaps,
+                            categories, frontInside, backInside);
 
                         switch (visibility)
                         {
@@ -116,11 +122,11 @@ namespace RuntimeCSG
         static PolygonCategory EvaluateFragment(
             CSGPolygon fragment, int ownerIdx,
             List<BrushData> brushes, int brushCount,
-            bool[,] overlaps)
+            bool[,] overlaps,
+            PolygonCategory[] categories, bool[] frontInside, bool[] backInside)
         {
             // Categorize fragment against each non-owner brush.
             // Non-overlapping brushes default to Outside (optimization).
-            var categories = new PolygonCategory[brushCount];
             for (int b = 0; b < brushCount; b++)
             {
                 if (b == ownerIdx)
@@ -150,9 +156,6 @@ namespace RuntimeCSG
             // Evaluate chain for front (outside owner) and back (inside owner).
             // For each brush, convert category to inside/outside boolean differently
             // for front vs back evaluation.
-            var frontInside = new bool[brushCount];
-            var backInside = new bool[brushCount];
-
             for (int b = 0; b < brushCount; b++)
             {
                 if (b == ownerIdx)
@@ -242,17 +245,21 @@ namespace RuntimeCSG
 
         /// <summary>
         /// Split a polygon against all planes, producing convex fragments.
+        /// Reuses list buffers to avoid per-plane allocations.
         /// </summary>
         static List<CSGPolygon> SplitPolygon(CSGPolygon polygon, List<CSGPlane> planes)
         {
             var current = new List<CSGPolygon> { polygon.Clone() };
+            var next = new List<CSGPolygon>();
 
             for (int i = 0; i < planes.Count; i++)
             {
-                var next = new List<CSGPolygon>(current.Count + 1);
+                next.Clear();
+                var plane = planes[i];
+
                 for (int j = 0; j < current.Count; j++)
                 {
-                    PolygonClipper.Split(current[j], planes[i],
+                    PolygonClipper.Split(current[j], plane,
                         out var front, out var back, out var cf, out var cb);
 
                     if (front != null) next.Add(front);
@@ -260,7 +267,12 @@ namespace RuntimeCSG
                     if (cf != null) next.Add(cf);
                     if (cb != null) next.Add(cb);
                 }
+
+                // Swap lists to reuse allocations
+                var temp = current;
                 current = next;
+                next = temp;
+
                 if (current.Count == 0) break;
             }
 

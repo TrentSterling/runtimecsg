@@ -169,6 +169,134 @@ namespace RuntimeCSG.Editor
             AddBrushFromMenu("Cylinder", BrushFactory.Cylinder(), CSGOperation.Subtractive);
         }
 
+        [MenuItem("GameObject/CSG/CSG Demo (Boolean Ops)", false, 40)]
+        static void SpawnCSGDemo()
+        {
+            SpawnDemoScene();
+        }
+
+        /// <summary>
+        /// Spawns the classic Wikipedia CSG demo: three models side by side
+        /// showing Union, Subtract, and Intersect of a cube and sphere.
+        /// </summary>
+        public static void SpawnDemoScene()
+        {
+            var root = new GameObject("CSG_Demo");
+            Undo.RegisterCreatedObjectUndo(root, "Spawn CSG Demo");
+
+            float spacing = 3f;
+            var ops = new (string label, CSGOperation op)[]
+            {
+                ("Union", CSGOperation.Additive),
+                ("Subtract", CSGOperation.Subtractive),
+                ("Intersect", CSGOperation.Intersect),
+            };
+
+            for (int i = 0; i < ops.Length; i++)
+            {
+                float x = (i - 1) * spacing;
+
+                var modelGo = new GameObject($"CSG_{ops[i].label}");
+                modelGo.transform.SetParent(root.transform, false);
+                modelGo.transform.localPosition = new Vector3(x, 0, 0);
+                var model = modelGo.AddComponent<CSGModel>();
+
+                // Additive box
+                var boxGo = new GameObject("Box");
+                boxGo.transform.SetParent(modelGo.transform, false);
+                var boxBrush = boxGo.AddComponent<CSGBrush>();
+                boxBrush.Descriptor.FromCSGPlanes(BrushFactory.Box(Vector3.one * 0.6f));
+                boxBrush.Descriptor.Operation = CSGOperation.Additive;
+                boxBrush.Descriptor.Order = 0;
+
+                // Sphere offset to partially overlap, with the target operation
+                var sphereGo = new GameObject("Sphere");
+                sphereGo.transform.SetParent(modelGo.transform, false);
+                sphereGo.transform.localPosition = new Vector3(0.35f, 0.35f, 0.35f);
+                var sphereBrush = sphereGo.AddComponent<CSGBrush>();
+                sphereBrush.Descriptor.FromCSGPlanes(BrushFactory.Sphere(0.55f, 10, 10));
+                sphereBrush.Descriptor.Operation = ops[i].op;
+                sphereBrush.Descriptor.Order = 1;
+
+                var m = model; // capture for closure
+                EditorApplication.delayCall += () =>
+                {
+                    if (m != null)
+                        m.RebuildAll();
+                };
+            }
+
+            Selection.activeGameObject = root;
+            if (SceneView.lastActiveSceneView != null)
+                SceneView.lastActiveSceneView.FrameSelected();
+        }
+
+        [MenuItem("GameObject/CSG/CSG Icon Shape", false, 41)]
+        static void SpawnCSGIcon()
+        {
+            SpawnIconShape();
+        }
+
+        /// <summary>
+        /// Spawns the Wikipedia CSG icon: a cube intersected with a sphere,
+        /// with three cylinders subtracted along X, Y, and Z axes.
+        /// (Cube ∩ Sphere) − CylX − CylY − CylZ
+        /// </summary>
+        public static void SpawnIconShape()
+        {
+            var modelGo = new GameObject("CSG_Icon");
+            Undo.RegisterCreatedObjectUndo(modelGo, "Spawn CSG Icon");
+            var model = modelGo.AddComponent<CSGModel>();
+
+            int order = 0;
+
+            // 1. Additive cube (base shape)
+            var boxGo = new GameObject("Cube");
+            boxGo.transform.SetParent(modelGo.transform, false);
+            var boxBrush = boxGo.AddComponent<CSGBrush>();
+            boxBrush.Descriptor.FromCSGPlanes(BrushFactory.Box(Vector3.one * 0.5f));
+            boxBrush.Descriptor.Operation = CSGOperation.Additive;
+            boxBrush.Descriptor.Order = order++;
+
+            // 2. Intersect sphere (rounds the cube edges/corners)
+            //    r=0.68 clips corners aggressively while preserving flat cube faces
+            var sphereGo = new GameObject("Sphere");
+            sphereGo.transform.SetParent(modelGo.transform, false);
+            var sphereBrush = sphereGo.AddComponent<CSGBrush>();
+            sphereBrush.Descriptor.FromCSGPlanes(BrushFactory.Sphere(0.68f, 8, 8));
+            sphereBrush.Descriptor.Operation = CSGOperation.Intersect;
+            sphereBrush.Descriptor.Order = order++;
+
+            // 3-5. Subtractive cylinders along each axis (punch through-holes)
+            //      r=0.28 gives prominent holes matching the Wikipedia graphic
+            var cylAxes = new (string name, Vector3 euler)[]
+            {
+                ("Cylinder_Y", Vector3.zero),
+                ("Cylinder_X", new Vector3(0, 0, 90)),
+                ("Cylinder_Z", new Vector3(90, 0, 0)),
+            };
+            foreach (var (name, euler) in cylAxes)
+            {
+                var cylGo = new GameObject(name);
+                cylGo.transform.SetParent(modelGo.transform, false);
+                cylGo.transform.localRotation = Quaternion.Euler(euler);
+                var cylBrush = cylGo.AddComponent<CSGBrush>();
+                cylBrush.Descriptor.FromCSGPlanes(BrushFactory.Cylinder(0.28f, 0.8f, 12));
+                cylBrush.Descriptor.Operation = CSGOperation.Subtractive;
+                cylBrush.Descriptor.Order = order++;
+            }
+
+            EditorApplication.delayCall += () =>
+            {
+                if (model != null)
+                    model.RebuildAll();
+            };
+
+            Selection.activeGameObject = modelGo;
+            if (SceneView.lastActiveSceneView != null)
+                SceneView.lastActiveSceneView.FrameSelected();
+        }
+
         static void AddBrushFromMenu(string name, List<CSGPlane> planes, CSGOperation operation)
         {
             var model = Selection.activeGameObject.GetComponentInParent<CSGModel>();

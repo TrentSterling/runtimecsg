@@ -246,9 +246,13 @@ namespace RuntimeCSG.Editor
 
             GUILayout.Space(4);
 
-            // Rebuild button
-            if (GUILayout.Button("Rebuild All", _buttonStyle))
+            // Rebuild + Demo buttons
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Rebuild", _buttonStyle))
                 model.RebuildAll();
+            if (GUILayout.Button("Demo", _buttonStyle))
+                CSGModelEditor.SpawnDemoScene();
+            GUILayout.EndHorizontal();
 
             GUILayout.Space(2);
 
